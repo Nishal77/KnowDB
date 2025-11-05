@@ -60,7 +60,7 @@ export function ChatInput({ onSend, isLoading, disabled }: ChatInputProps) {
           />
         </div>
         <p className="text-xs text-muted-foreground mt-2 px-1 text-center">
-        Describe your query and press Enter
+        KnowDB · Press Enter to run query · v1.0
         </p>
       </div>
     </div>

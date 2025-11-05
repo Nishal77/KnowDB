@@ -5,7 +5,6 @@ import { ChatSidebar } from "./components/ChatSidebar";
 import { ChatMessages } from "./components/ChatMessages";
 import { ChatInput } from "./components/ChatInput";
 import { EmptyState } from "./components/EmptyState";
-import { SchemaPanel } from "./components/SchemaPanel";
 import { BreadcrumbNav } from "./components/BreadcrumbNav";
 import { useChat } from "./hooks/useChat";
 import { useAutoScroll } from "./hooks/useAutoScroll";
@@ -44,8 +43,6 @@ export default function DashboardPage() {
           <ChatInput onSend={sendMessage} isLoading={isLoading} />
         </div>
       </main>
-
-      <SchemaPanel />
     </div>
   );
 }
