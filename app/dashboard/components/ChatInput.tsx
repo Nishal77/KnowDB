@@ -14,7 +14,7 @@ interface ChatInputProps {
 export function ChatInput({ onSend, isLoading, disabled }: ChatInputProps) {
   const inputValueRef = useRef<string>("");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (!isLoading && !disabled) {
       inputValueRef.current = e.target.value;
     }
@@ -23,10 +23,11 @@ export function ChatInput({ onSend, isLoading, disabled }: ChatInputProps) {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-    // Get the value from the form's input element directly
+    // Get the value from the form's textarea or input element directly
     const form = e.currentTarget;
+    const textarea = form.querySelector('textarea') as HTMLTextAreaElement;
     const input = form.querySelector('input[type="text"]') as HTMLInputElement;
-    const value = input?.value?.trim() || inputValueRef.current.trim();
+    const value = (textarea?.value || input?.value || inputValueRef.current)?.trim();
     
     if (!value || isLoading || disabled) return;
     
@@ -45,7 +46,7 @@ export function ChatInput({ onSend, isLoading, disabled }: ChatInputProps) {
   ];
 
   return (
-    <div className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-border/50 w-full">
       <div className="w-full max-w-[52rem] mx-auto p-4">
         <div className="relative">
           {isLoading && (
@@ -60,7 +61,7 @@ export function ChatInput({ onSend, isLoading, disabled }: ChatInputProps) {
           />
         </div>
         <p className="text-xs text-muted-foreground mt-2 px-1 text-center">
-        KnowDB · Press Enter to run query · v1.0
+        KnowDB · Press Enter to run query · Shift+Enter for new line · v1.0
         </p>
       </div>
     </div>

@@ -8,7 +8,13 @@ export function useAutoScroll<T>(deps: T[]): RefObject<HTMLDivElement> {
 
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      // Find the ScrollArea viewport if it exists, otherwise use the element itself
+      const viewport = scrollRef.current.closest('[data-slot="scroll-area"]')?.querySelector('[data-slot="scroll-area-viewport"]') as HTMLElement;
+      const scrollElement = viewport || scrollRef.current;
+      
+      if (scrollElement) {
+        scrollElement.scrollTop = scrollElement.scrollHeight;
+      }
     }
   }, [deps]);
 

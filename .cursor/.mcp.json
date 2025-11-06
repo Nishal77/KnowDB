@@ -1,0 +1,11 @@
+{
+    "mcpServers": {
+      "MongoDB": {
+        "command": "npx",
+        "args": ["-y", "mongodb-mcp-server@latest", "--readOnly"],
+        "env": {
+          "MDB_MCP_CONNECTION_STRING": "mongodb+srv://exot4396_db_user:0TaaaCjkHELW6paY@cluster0.ni3wr96.mongodb.net/?appName=Cluster0"
+        }
+      }
+    }
+  }

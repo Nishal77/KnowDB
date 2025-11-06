@@ -14,8 +14,8 @@ interface ChatMessagesProps {
 
 export function ChatMessages({ messages, isLoading, scrollRef }: ChatMessagesProps) {
   return (
-    <ScrollArea className="flex-1" ref={scrollRef}>
-      <div className="flex flex-col gap-6 p-6 pb-24">
+    <ScrollArea className="h-full w-full">
+      <div className="flex flex-col gap-6 p-6 pb-32" ref={scrollRef}>
         {messages.map((message) => (
           <div
             key={message.id}

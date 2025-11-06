@@ -25,22 +25,27 @@ export default function DashboardPage() {
     <div className="flex h-screen bg-background overflow-hidden">
       <ChatSidebar onNewChat={clearMessages} isOpen={isSidebarOpen} />
       
-      <main className="flex-1 flex flex-col overflow-hidden relative transition-all duration-300 ease-in-out">
-        <BreadcrumbNav 
-          items={breadcrumbItems} 
-          status="connected" 
-          onToggleSidebar={toggleSidebar}
-          isSidebarOpen={isSidebarOpen}
-        />
+      <main className="flex-1 flex flex-col h-screen overflow-hidden relative transition-all duration-300 ease-in-out">
+        <div className="flex-shrink-0">
+          <BreadcrumbNav 
+            items={breadcrumbItems} 
+            onToggleSidebar={toggleSidebar}
+            isSidebarOpen={isSidebarOpen}
+          />
+        </div>
         
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden relative min-h-0">
           {messages.length === 0 ? (
             <EmptyState />
           ) : (
-            <ChatMessages messages={messages} isLoading={isLoading} scrollRef={scrollRef} />
+            <div className="flex-1 overflow-hidden min-h-0">
+              <ChatMessages messages={messages} isLoading={isLoading} scrollRef={scrollRef} />
+            </div>
           )}
           
-          <ChatInput onSend={sendMessage} isLoading={isLoading} />
+          <div className="flex-shrink-0 relative z-10">
+            <ChatInput onSend={sendMessage} isLoading={isLoading} />
+          </div>
         </div>
       </main>
     </div>

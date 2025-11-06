@@ -35,14 +35,16 @@ import {
 
 interface BreadcrumbNavProps {
   items: string[];
-  status?: "connected" | "connecting" | "disconnected" | "syncing";
+  status?: "connected" | "connecting" | "disconnected" | "syncing" | "warning";
   onToggleSidebar?: () => void;
   isSidebarOpen?: boolean;
 }
 
-export function BreadcrumbNav({ items, status = "connected", onToggleSidebar, isSidebarOpen = true }: BreadcrumbNavProps) {
+export function BreadcrumbNav({ items, onToggleSidebar, isSidebarOpen = true }: BreadcrumbNavProps) {
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [mounted, setMounted] = useState(false);
+  const [dbStatus, setDbStatus] = useState<"connected" | "connecting" | "disconnected" | "warning">("connecting");
+  const [dbMessage, setDbMessage] = useState<string>("Checking database connection...");
 
   useEffect(() => {
     setMounted(true);
@@ -52,6 +54,36 @@ export function BreadcrumbNav({ items, status = "connected", onToggleSidebar, is
     const initialTheme = savedTheme || (prefersDark ? "dark" : "light");
     setTheme(initialTheme);
     updateTheme(initialTheme);
+  }, []);
+
+  // Poll database status every 3 seconds
+  useEffect(() => {
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+    
+    const checkStatus = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/status`);
+        if (response.ok) {
+          const data = await response.json();
+          setDbStatus(data.status || "disconnected");
+          setDbMessage(data.message || "Database status unknown");
+        } else {
+          setDbStatus("disconnected");
+          setDbMessage("Unable to check database status");
+        }
+      } catch (error) {
+        setDbStatus("disconnected");
+        setDbMessage("Connection error • Backend unavailable");
+      }
+    };
+
+    // Check immediately
+    checkStatus();
+
+    // Then poll every 3 seconds
+    const interval = setInterval(checkStatus, 3000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const updateTheme = (newTheme: "light" | "dark") => {
@@ -71,40 +103,48 @@ export function BreadcrumbNav({ items, status = "connected", onToggleSidebar, is
 
   const statusConfig = {
     connected: {
-      text: "Database connected • All systems operational",
+      text: dbMessage || "Database connected • All systems operational",
       icon: CheckCircle2,
       color: "text-emerald-700 dark:text-emerald-400",
       bgColor: "bg-emerald-50/80 dark:bg-emerald-950/40",
       borderColor: "border-emerald-200/80 dark:border-emerald-800/50",
       pulse: false,
+      dotColor: "bg-emerald-500",
+      dotGlow: "bg-emerald-400",
     },
     connecting: {
-      text: "Establishing database connection...",
+      text: dbMessage || "Establishing database connection...",
       icon: Loader2,
       color: "text-amber-700 dark:text-amber-400",
       bgColor: "bg-amber-50/80 dark:bg-amber-950/40",
       borderColor: "border-amber-200/80 dark:border-amber-800/50",
       pulse: true,
+      dotColor: "bg-amber-500",
+      dotGlow: "bg-amber-400",
     },
-    syncing: {
-      text: "Database syncing • Updating schema...",
+    warning: {
+      text: dbMessage || "Database connection unstable • Minor issues detected",
       icon: Database,
-      color: "text-blue-700 dark:text-blue-400",
-      bgColor: "bg-blue-50/80 dark:bg-blue-950/40",
-      borderColor: "border-blue-200/80 dark:border-blue-800/50",
+      color: "text-orange-700 dark:text-orange-400",
+      bgColor: "bg-orange-50/80 dark:bg-orange-950/40",
+      borderColor: "border-orange-200/80 dark:border-orange-800/50",
       pulse: true,
+      dotColor: "bg-orange-500",
+      dotGlow: "bg-orange-400",
     },
     disconnected: {
-      text: "Connection lost • Retrying...",
+      text: dbMessage || "Connection lost • Database unavailable",
       icon: Circle,
       color: "text-red-700 dark:text-red-400",
       bgColor: "bg-red-50/80 dark:bg-red-950/40",
       borderColor: "border-red-200/80 dark:border-red-800/50",
       pulse: false,
+      dotColor: "bg-red-500",
+      dotGlow: "bg-red-400",
     },
   };
 
-  const currentStatus = statusConfig[status];
+  const currentStatus = statusConfig[dbStatus];
   const StatusIcon = currentStatus.icon;
 
   return (
@@ -146,7 +186,7 @@ export function BreadcrumbNav({ items, status = "connected", onToggleSidebar, is
         <div
           className={cn(
             "flex items-center gap-2.5 px-4 py-2 rounded-full text-xs font-medium",
-            "backdrop-blur-sm transition-all",
+            "backdrop-blur-sm transition-all border",
             currentStatus.bgColor,
             currentStatus.borderColor,
             currentStatus.color,
@@ -154,27 +194,21 @@ export function BreadcrumbNav({ items, status = "connected", onToggleSidebar, is
           )}
         >
           {/* Live Status Dot */}
-          {status === "connected" && (
+          {dbStatus === "connected" && (
             <div className="relative flex items-center justify-center w-3 h-3">
-              <div className="absolute w-full h-full bg-emerald-400 rounded-full animate-ping opacity-60" />
-              <div className="absolute w-full h-full bg-emerald-400 rounded-full animate-pulse opacity-40" />
-              <div className="relative w-2.5 h-2.5 bg-emerald-500 rounded-full shadow-md shadow-emerald-500/30" />
+              <div className={`absolute w-full h-full ${currentStatus.dotGlow} rounded-full animate-ping opacity-60`} />
+              <div className={`absolute w-full h-full ${currentStatus.dotGlow} rounded-full animate-pulse opacity-40`} />
+              <div className={`relative w-2.5 h-2.5 ${currentStatus.dotColor} rounded-full shadow-md ${currentStatus.dotColor}/30`} />
             </div>
           )}
-          {status === "connecting" && (
+          {(dbStatus === "connecting" || dbStatus === "warning") && (
             <div className="relative flex items-center justify-center w-3 h-3">
-              <div className="absolute w-full h-full bg-amber-400 rounded-full animate-ping opacity-60" />
-              <div className="relative w-2.5 h-2.5 bg-amber-500 rounded-full shadow-md shadow-amber-500/30" />
+              <div className={`absolute w-full h-full ${currentStatus.dotGlow} rounded-full animate-ping opacity-60`} />
+              <div className={`relative w-2.5 h-2.5 ${currentStatus.dotColor} rounded-full shadow-md ${currentStatus.dotColor}/30`} />
             </div>
           )}
-          {status === "syncing" && (
-            <div className="relative flex items-center justify-center w-3 h-3">
-              <div className="absolute w-full h-full bg-blue-400 rounded-full animate-ping opacity-60" />
-              <div className="relative w-2.5 h-2.5 bg-blue-500 rounded-full shadow-md shadow-blue-500/30" />
-            </div>
-          )}
-          {status === "disconnected" && (
-            <div className="w-2.5 h-2.5 bg-red-500 rounded-full shadow-md shadow-red-500/30" />
+          {dbStatus === "disconnected" && (
+            <div className={`w-2.5 h-2.5 ${currentStatus.dotColor} rounded-full shadow-md ${currentStatus.dotColor}/30`} />
           )}
           
           <span className="whitespace-nowrap tracking-tight">{currentStatus.text}</span>

@@ -39,7 +39,7 @@ export default function LandingPage() {
               Query Your Database
               <br />
               <span className="text-primary">in Natural Language</span>
-            </h1>
+          </h1>
             
             <p className="mb-8 text-lg text-muted-foreground sm:text-xl">
               {APP_DESCRIPTION}
